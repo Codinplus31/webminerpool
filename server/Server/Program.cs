@@ -670,6 +670,38 @@ namespace Server
 
             bool certAvailable = (cert != null);
 Console.WriteLine(certAvailable+": certificated");
+       string certPath = "certificate.pfx";
+if (File.Exists(certPath))
+{
+    Console.WriteLine("Certificate is available.");
+}
+else
+{
+    Console.WriteLine("False: Certificate not found.");
+}
+
+string certPath = "certificate.pfx";
+string certPassword = "your_password"; // Use your actual password
+
+try
+{
+    if (!File.Exists(certPath))
+    {
+        Console.WriteLine("False: Certificate not found.");
+    }
+    else
+    {
+        var cert = new X509Certificate2(certPath, certPassword);
+        Console.WriteLine("Certificate loaded OK!");
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine("False: SSL certificate could not be loaded. Secure connection disabled.");
+    Console.WriteLine("Error was: " + ex.Message);
+}
+            
+            
             if (!certAvailable) CConsole.ColorWarning(() =>
             {
                 Console.WriteLine("SSL certificate could not be loaded. Secure connection disabled.");
