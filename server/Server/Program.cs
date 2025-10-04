@@ -706,10 +706,6 @@ catch (CryptographicException ex)
         Console.WriteLine("Cryptographic error: " + ex.Message);
     }
 }
-catch (Exception ex)
-{
-    Console.WriteLine("Other error: " + ex.Message);
-}
             
             
             if (!certAvailable) CConsole.ColorWarning(() =>
