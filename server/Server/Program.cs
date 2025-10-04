@@ -29,6 +29,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Fleck;
 using TinyJson;
+using System.Net;
+using System.Threading.Tasks;
 
 using JsonData = System.Collections.Generic.Dictionary<string, object>;
 
@@ -84,8 +86,31 @@ namespace Server
         public string Password;
     }
 
+    public static void StartHealthCheckServer(int port)
+    {
+        HttpListener listener = new HttpListener();
+        listener.Prefixes.Add($"http://*:{port}/health/");
+        listener.Start();
+        Task.Run(() =>
+        {
+            while (true)
+            {
+                var context = listener.GetContext();
+                context.Response.StatusCode = 200;
+                using (var writer = new System.IO.StreamWriter(context.Response.OutputStream))
+                {
+                    writer.Write("OK");
+                }
+                context.Response.Close();
+            }
+        });
+    }
+    
     class MainClass
     {
+
+
+        
 
         [DllImport("libhash.so", CallingConvention = CallingConvention.StdCall)]
         static extern IntPtr hash_cn(string hex, int algo, int variant, int height);
@@ -546,7 +571,7 @@ namespace Server
         public static void Main(string[] args)
         {
             //ExcessiveHashTest(); return;
-
+StartHealthCheckServer(8080)
             CConsole.ColorInfo(() =>
             {
 
