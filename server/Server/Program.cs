@@ -722,6 +722,9 @@ catch (CryptographicException ex)
             server = new WebSocketServer(localAddr);
 
             server.Certificate = cert;
+            server.EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls12;
+
+// Start your server and accep
 
             FleckLog.LogAction = (level, message, ex) =>
             {
