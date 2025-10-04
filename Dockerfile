@@ -1,44 +1,48 @@
-FROM mono:5.16 AS webminerpool-build
+# Stage 1: Build
+FROM debian:bullseye AS webminerpool-build
 
-ARG DONATION_LEVEL=0.03
+ENV DONATION_LEVEL=0.03
 
-COPY server /server
-COPY hash_cn /hash_cn
+# Install dependencies
+RUN apt-get update && \
+    apt-get install -y build-essential mono-complete git make ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 
+# Copy source code into the image (adjust if necessary)
+WORKDIR /src
+COPY . .
+
+# Make DonationLevel change
+RUN sed -ri "s/^(.*DonationLevel = )[0-9]\.[0-9]{2}/\1${DONATION_LEVEL}/" /src/server/Server/DevDonation.cs
+
+# Build native library
+RUN cd /src/hash_cn/libhash && make
+
+# Build .NET server
+RUN cd /src/server && msbuild Server.sln /p:Configuration=Release_Server /p:Platform="any CPU"
+
+# Debug: List built files (remove after confirming build works)
+RUN ls -al /src/hash_cn/libhash
+RUN ls -al /src/server/Server/bin/Release_Server
+
+# Stage 2: Runtime
 FROM debian:bullseye
 
-# ... other setup commands
+# Install Mono runtime for .NET executable
+RUN apt-get update && apt-get install -y mono-runtime ca-certificates && rm -rf /var/lib/apt/lists/*
 
-RUN sed -ri "s/^(.*DonationLevel = )[0-9]\.[0-9]{2}/\10.03/" /server/Server/DevDonation.cs && \
-    apt-get update && \
-    apt-get install -y build-essential && \
-    rm -rf /var/lib/apt/lists/* && \
-    cd /hash_cn/libhash && \
-    make && \
-    cd /server && \
-    msbuild Server.sln /p:Configuration=Release_Server /p:Platform="any CPU"
-FROM mono:5.16
+WORKDIR /webminerpool
 
-RUN mkdir /webminerpool
+# Copy built artifacts from build stage
+COPY --from=webminerpool-build /src/server/Server/bin/Release_Server/server.exe /webminerpool/
+COPY --from=webminerpool-build /src/server/Server/bin/Release_Server/pools.json /webminerpool/
+COPY --from=webminerpool-build /src/hash_cn/libhash/libhash.so /webminerpool/
 
-# Install acme.sh
-RUN apt-get -qq update && \
-	apt-get install -qq \
-		coreutils \
-		cron \
-		curl \
-		git \
-		openssl \
-		socat && \
-	rm -rf /var/lib/apt/lists/* && \
-	git clone https://github.com/Neilpang/acme.sh.git /root/acme.sh && \
-	cd /root/acme.sh && \
-	git checkout 2.7.9 && \
-	/root/acme.sh/acme.sh --install --home /root/.acme.sh
+# Copy entrypoint script if you have one
 COPY entrypoint.sh /entrypoint.sh
-COPY --from=webminerpool-build /server/Server/bin/Release_Server/server.exe /webminerpool
-COPY --from=webminerpool-build /server/Server/bin/Release_Server/pools.json /webminerpool
-COPY --from=webminerpool-build /hash_cn/libhash/libhash.so /webminerpool
 RUN chmod +x /entrypoint.sh
 
-ENTRYPOINT ["./entrypoint.sh"]
+# Expose port (adjust as needed)
+EXPOSE 8080
+
+ENTRYPOINT ["/entrypoint.sh"]
