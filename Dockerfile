@@ -3,12 +3,11 @@ FROM debian:bullseye AS webminerpool-build
 
 ENV DONATION_LEVEL=0.03
 
-# Install dependencies
+# Install dependencies for native build and Mono
 RUN apt-get update && \
     apt-get install -y build-essential mono-complete git make ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-# Set working directory and copy source code
 WORKDIR /src
 COPY . .
 
@@ -18,13 +17,13 @@ RUN sed -ri "s/^(.*DonationLevel = )[0-9]\.[0-9]{2}/\1${DONATION_LEVEL}/" /src/s
 # Build native library
 RUN cd /src/hash_cn/libhash && make
 
-# Build .NET server
-RUN cd /src/server && msbuild Server.sln /p:Configuration=Release_Server /p:Platform="any CPU"
+# Build .NET server using xbuild (Mono's build tool)
+RUN cd /src/server && xbuild Server.sln /p:Configuration=Release_Server /p:Platform="any CPU"
 
 # Stage 2: Runtime
 FROM debian:bullseye
 
-# Install Mono runtime for .NET executable
+# Install Mono runtime for running .NET executable
 RUN apt-get update && apt-get install -y mono-runtime ca-certificates && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /webminerpool
@@ -38,10 +37,8 @@ COPY --from=webminerpool-build /src/hash_cn/libhash/libhash.so /webminerpool/
 # COPY entrypoint.sh /entrypoint.sh
 # RUN chmod +x /entrypoint.sh
 
-# Expose port (change if needed)
 EXPOSE 8080
 
-# If you have entrypoint.sh, use:
+# Use entrypoint.sh if present, otherwise run the server directly
 # ENTRYPOINT ["/entrypoint.sh"]
-# Otherwise, launch the server directly:
 ENTRYPOINT ["mono", "/webminerpool/server.exe"]
