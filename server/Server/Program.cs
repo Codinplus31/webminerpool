@@ -680,19 +680,19 @@ else
     Console.WriteLine("False: Certificate not found.");
 }
 
-string certPath = "certificate.pfx";
-string certPassword = "your_password"; // Use your actual password
+string certPath1 = "certificate.pfx";
+string certPassword = "miner"; // Use your actual password
 
 try
 {
-    if (!File.Exists(certPath))
+    if (!File.Exists(certPath1))
     {
         Console.WriteLine("False: Certificate not found.");
     }
     else
     {
-        var cert = new X509Certificate2(certPath, certPassword);
-        Console.WriteLine("Certificate loaded OK!");
+        var cert1 = new X509Certificate2(certPath1, certPassword);
+        Console.WriteLine("Certificate loaded OK!", cert1);
     }
 }
 catch (Exception ex)
