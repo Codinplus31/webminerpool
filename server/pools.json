@@ -1,3 +1,4 @@
 {
-        "moneroocean.stream" : { "url" : "gulf.moneroocean.stream", "port" : 80, "emptypassword" : "x", "algorithm" : "cn" }
+        "moneroocean.stream" : { "url" : "gulf.moneroocean.stream", "port" : 80, "emptypassword" : "x", "algorithm" : "cn", "user": "46W7W4PiWjnfEKwCs6oezqengntEYMRu9S997hATfZSKDvT5VJuxXTNULdF9XFB3ZJf5Lp3XPSuoBRYwXHqkTAUQGy3pZWU"
+     }
 }
