@@ -669,7 +669,7 @@ namespace Server
             try { cert = new X509Certificate2("certificate.pfx", "miner"); } catch (Exception e) { exception = e; cert = null; }
 
             bool certAvailable = (cert != null);
-
+Console.WriteLine(certAvailable+": certificated");
             if (!certAvailable) CConsole.ColorWarning(() =>
             {
                 Console.WriteLine("SSL certificate could not be loaded. Secure connection disabled.");
