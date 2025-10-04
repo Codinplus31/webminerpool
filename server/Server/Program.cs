@@ -695,10 +695,20 @@ try
         Console.WriteLine("Certificate loaded OK!", cert1);
     }
 }
+catch (CryptographicException ex)
+{
+    if (ex.Message.Contains("password") || ex.Message.Contains("Private key") || ex.Message.Contains("decryption"))
+    {
+        Console.WriteLine("Password error: The password for the certificate is incorrect.");
+    }
+    else
+    {
+        Console.WriteLine("Cryptographic error: " + ex.Message);
+    }
+}
 catch (Exception ex)
 {
-    Console.WriteLine("False: SSL certificate could not be loaded. Secure connection disabled.");
-    Console.WriteLine("Error was: " + ex.Message);
+    Console.WriteLine("Other error: " + ex.Message);
 }
             
             
